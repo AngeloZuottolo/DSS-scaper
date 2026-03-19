@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSS SkyNet - Fleet Data Dashboard</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-light: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 { font-size: 1.75rem; margin-bottom: 0.5rem; }
+        .header p { opacity: 0.9; font-size: 0.95rem; }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+        }
+        
+        .stat-card h3 {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card .value { font-size: 2rem; font-weight: 700; color: var(--primary); }
+        
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border);
+            overflow-x: auto;
+        }
+        
+        .tab-btn {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+        
+        .tab-btn:hover { color: var(--primary); }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card h2 { font-size: 1.25rem; margin-bottom: 1rem; color: var(--text-primary); }
+        
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        
+        .module-item {
+            background: var(--bg-light);
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+        
+        .module-item:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .module-item h4 { color: var(--primary); margin-bottom: 0.5rem; }
+        .module-item p { color: var(--text-secondary); font-size: 0.875rem; }
+        
+        .feature-category { margin-bottom: 1.5rem; }
+        .feature-category h3 { color: var(--primary); font-size: 1.1rem; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+        
+        .feature-list li { padding: 0.5rem 0; padding-left: 1.5rem; position: relative; color: var(--text-secondary); }
+        .feature-list li::before { content: "✓"; position: absolute; left: 0; color: var(--success); font-weight: bold; }
+        
+        .status-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; }
+        .status-badge.success { background: #d1fae5; color: #065f46; }
+        .status-badge.warning { background: #fef3c7; color: #92400e; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: var(--bg-light); font-weight: 600; }
+        
+        .footer { text-align: center; padding: 2rem; color: var(--text-secondary); font-size: 0.875rem; }
+        
+        .timestamp { font-size: 0.75rem; color: var(--text-secondary); margin-top: 1rem; }
+        
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header { padding: 1.5rem; }
+            .tabs { gap: 0; }
+            .tab-btn { padding: 0.75rem 1rem; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>DSS SkyNet Fleet Dashboard</h1>
+        <p>SkyNetX Fleet Localization System - Data Visualization</p>
+    </header>
+    
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Status</h3>
+                <div class="value" id="status-badge"></div>
+            </div>
+            <div class="stat-card">
+                <h3>GPS Units</h3>
+                <div class="value" id="units-count">--</div>
+            </div>
+            <div class="stat-card">
+                <h3>Sections</h3>
+                <div class="value" id="sections-count">--</div>
+            </div>
+            <div class="stat-card">
+                <h3>Features</h3>
+                <div class="value" id="features-count">--</div>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('sitemap')">Sitemap</button>
+            <button class="tab-btn" onclick="showTab('functionalities')">Functionalities</button>
+            <button class="tab-btn" onclick="showTab('units')">Units</button>
+            <button class="tab-btn" onclick="showTab('api')">API Info</button>
+        </div>
+        
+        <div id="sitemap" class="tab-content active">
+            <div class="card">
+                <h2>Navigation Sitemap</h2>
+                <div class="module-grid" id="sitemap-modules"></div>
+            </div>
+        </div>
+        
+        <div id="functionalities" class="tab-content">
+            <div class="card">
+                <h2>Platform Functionalities</h2>
+                <div id="features-container"></div>
+            </div>
+        </div>
+        
+        <div id="units" class="tab-content">
+            <div class="card">
+                <h2>GPS Units</h2>
+                <div id="units-container"></div>
+            </div>
+        </div>
+        
+        <div id="api" class="tab-content">
+            <div class="card">
+                <h2>API Information</h2>
+                <div id="api-info"></div>
+            </div>
+        </div>
+        
+        <p class="timestamp" id="timestamp"></p>
+    </div>
+    
+    <footer class="footer">
+        <p>DSS SkyNet Fleet Scraper | Data extracted from skynetx.dssgroup.it</p>
+    </footer>
+    
+    <script>
+        let data = {
+  "scraped_at": "2026-03-19T12:03:56.449869",
+  "login_success": true,
+  "username": "transitdaniello",
+  "units_count": 2616,
+  "sitemap": {
+    "base": "https://skynetx.dssgroup.it/",
+    "sections": [
+      {
+        "name": "Realtime",
+        "description": "Real-time map tracking",
+        "path": "/realtime"
+      },
+      {
+        "name": "Report",
+        "description": "Fleet reports and analytics",
+        "path": "/report",
+        "sub_items": [
+          {
+            "name": "Totals",
+            "path": "/report/totals"
+          },
+          {
+            "name": "Partials",
+            "path": "/report/partials"
+          },
+          {
+            "name": "Daily",
+            "path": "/report/daily"
+          },
+          {
+            "name": "Fleet Daily",
+            "path": "/report/fleet-daily"
+          },
+          {
+            "name": "Last 24h",
+            "path": "/report/last-24h"
+          },
+          {
+            "name": "Last 72h",
+            "path": "/report/last-72h"
+          }
+        ]
+      },
+      {
+        "name": "Yard",
+        "description": "Yard management",
+        "path": "/yard"
+      },
+      {
+        "name": "IO",
+        "description": "Input/Output controls",
+        "path": "/io"
+      },
+      {
+        "name": "Targets",
+        "description": "Geofencing targets with events",
+        "path": "/targets"
+      },
+      {
+        "name": "Routes",
+        "description": "Route management with events",
+        "path": "/routes"
+      },
+      {
+        "name": "Events",
+        "description": "Event logs and alerts",
+        "path": "/events"
+      },
+      {
+        "name": "Temperature",
+        "description": "Temperature monitoring",
+        "path": "/temperature"
+      },
+      {
+        "name": "Chart",
+        "description": "Speed/Analog/Activity charts",
+        "path": "/chart"
+      },
+      {
+        "name": "Last Point",
+        "description": "Latest GPS positions",
+        "path": "/last-point"
+      },
+      {
+        "name": "Shipments",
+        "description": "Shipment tracking with events",
+        "path": "/shipments"
+      },
+      {
+        "name": "Maintenance",
+        "description": "Vehicle maintenance scheduling",
+        "path": "/maintenance"
+      },
+      {
+        "name": "Drivers",
+        "description": "Driver registry and management",
+        "path": "/drivers"
+      },
+      {
+        "name": "Geofencing",
+        "description": "Geofence management",
+        "path": "/geofencing"
+      }
+    ]
+  },
+  "functionalities": {
+    "authentication": {
+      "name": "Authentication",
+      "features": [
+        "JWT token-based authentication",
+        "Session persistence",
+        "Two-factor authentication (2FA) support",
+        "Password reset functionality"
+      ]
+    },
+    "fleet_tracking": {
+      "name": "Fleet Tracking",
+      "features": [
+        "Real-time GPS position tracking",
+        "Vehicle status monitoring",
+        "Speed tracking",
+        "Heading/direction monitoring",
+        "Last position retrieval"
+      ]
+    },
+    "mapping": {
+      "name": "Mapping & Visualization",
+      "features": [
+        "Interactive map display",
+        "Multiple map providers support",
+        "Vehicle markers on map",
+        "Route visualization",
+        "Stop location markers"
+      ]
+    },
+    "reporting": {
+      "name": "Reporting & Analytics",
+      "features": [
+        "Total reports",
+        "Partial reports",
+        "Daily reports",
+        "Fleet daily reports",
+        "Last 24h reports",
+        "Last 72h reports",
+        "Custom date range reports",
+        "Export capabilities"
+      ]
+    },
+    "geofencing": {
+      "name": "Geofencing & Targets",
+      "features": [
+        "Geofence creation",
+        "Target waypoints",
+        "Entry/exit alerts",
+        "Custom zones"
+      ]
+    },
+    "sensors": {
+      "name": "Sensor Monitoring",
+      "features": [
+        "Temperature monitoring",
+        "Humidity tracking",
+        "Shock detection",
+        "Light sensors",
+        "Altitude tracking",
+        "Analog inputs"
+      ]
+    },
+    "events": {
+      "name": "Events & Alarms",
+      "features": [
+        "Real-time event notifications",
+        "Power failure alarms",
+        "SOS alerts",
+        "Speed limit violations",
+        "Geofence breach alerts",
+        "24/7 central station monitoring"
+      ]
+    },
+    "maintenance": {
+      "name": "Maintenance Management",
+      "features": [
+        "Vehicle maintenance scheduling",
+        "Service reminders",
+        "Maintenance history"
+      ]
+    },
+    "drivers": {
+      "name": "Driver Management",
+      "features": [
+        "Driver registry",
+        "Driver-vehicle association",
+        "Driver activation/deactivation",
+        "Driver identification"
+      ]
+    },
+    "shipments": {
+      "name": "Shipment Tracking",
+      "features": [
+        "Cargo tracking",
+        "Shipment events",
+        "ETA calculations"
+      ]
+    },
+    "api": {
+      "name": "API Access",
+      "features": [
+        "REST API access",
+        "API key management",
+        "Third-party integration"
+      ]
+    }
+  },
+  "units": [
+    "7REF",
+    "7Q0L",
+    "7REC",
+    "UDCF",
+    "7REY"
+  ]
+};
+        
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        function renderData() {
+            if (!data) {
+                document.getElementById('status-badge').innerHTML = '<span class="status-badge warning">No data - Run scraper first</span>';
+                return;
+            }
+            
+            document.getElementById('status-badge').innerHTML = '<span class="status-badge success">Connected</span>';
+            document.getElementById('units-count').textContent = data.units_count || 0;
+            document.getElementById('sections-count').textContent = data.sitemap?.sections?.length || 0;
+            
+            let totalFeatures = 0;
+            if (data.functionalities) {
+                Object.values(data.functionalities).forEach(cat => {
+                    totalFeatures += cat.features?.length || 0;
+                });
+            }
+            document.getElementById('features-count').textContent = totalFeatures;
+            document.getElementById('timestamp').textContent = 'Last updated: ' + (data.scraped_at || 'N/A');
+            
+            renderSitemap();
+            renderFunctionalities();
+            renderUnits();
+            renderAPIInfo();
+        }
+        
+        function renderSitemap() {
+            const container = document.getElementById('sitemap-modules');
+            if (!data?.sitemap?.sections) { container.innerHTML = '<p>No sitemap data available</p>'; return; }
+            
+            container.innerHTML = data.sitemap.sections.map(section => `
+                <div class="module-item">
+                    <h4>${section.name}</h4>
+                    <p>${section.description || ''}</p>
+                    ${section.path ? `<small style="color: var(--text-secondary);">Path: ${section.path}</small>` : ''}
+                    ${section.sub_items?.length ? `<ul style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-secondary); padding-left: 1rem;">${section.sub_items.map(item => `<li>${item.name}</li>`).join('')}</ul>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        function renderFunctionalities() {
+            const container = document.getElementById('features-container');
+            if (!data?.functionalities) { container.innerHTML = '<p>No functionalities data available</p>'; return; }
+            
+            container.innerHTML = Object.entries(data.functionalities).map(([key, cat]) => `
+                <div class="feature-category">
+                    <h3>${cat.name}</h3>
+                    <ul class="feature-list">
+                        ${cat.features.map(f => `<li>${f}</li>`).join('')}
+                    </ul>
+                </div>
+            `).join('');
+        }
+        
+        function renderUnits() {
+            const container = document.getElementById('units-container');
+            if (!data?.units?.length) {
+                container.innerHTML = `<p>${data.units_count || 0} units total. Run scraper to see details.</p>`;
+                return;
+            }
+            
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Plate</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.units.map(unit => `
+                            <tr>
+                                <td>${unit.name || unit.id || 'N/A'}</td>
+                                <td>${unit.type || 'GPS'}</td>
+                                <td>${unit.plate || 'N/A'}</td>
+                                <td><span class="status-badge success">Active</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        function renderAPIInfo() {
+            const container = document.getElementById('api-info');
+            container.innerHTML = `
+                <div class="module-grid">
+                    <div class="module-item">
+                        <h4>Authentication</h4>
+                        <p>JWT Token-based authentication via REST API</p>
+                        <small style="color: var(--text-secondary);">Endpoint: POST /user/login</small>
+                    </div>
+                    <div class="module-item">
+                        <h4>Base URL</h4>
+                        <p>https://api.x-find.live/api/v3</p>
+                    </div>
+                    <div class="module-item">
+                        <h4>Real-time</h4>
+                        <p>WebSocket connection for live updates</p>
+                        <small style="color: var(--text-secondary);">wss://realtime-one.x-find.live:5002</small>
+                    </div>
+                    <div class="module-item">
+                        <h4>Maps</h4>
+                        <p>HERE Maps API integration</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        renderData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+{
+  "scraped_at": "2026-03-19T12:03:56.449869",
+  "login_success": true,
+  "username": "transitdaniello",
+  "units_count": 2616,
+  "sitemap": {
+    "base": "https://skynetx.dssgroup.it/",
+    "sections": [
+      {
+        "name": "Realtime",
+        "description": "Real-time map tracking",
+        "path": "/realtime"
+      },
+      {
+        "name": "Report",
+        "description": "Fleet reports and analytics",
+        "path": "/report",
+        "sub_items": [
+          {
+            "name": "Totals",
+            "path": "/report/totals"
+          },
+          {
+            "name": "Partials",
+            "path": "/report/partials"
+          },
+          {
+            "name": "Daily",
+            "path": "/report/daily"
+          },
+          {
+            "name": "Fleet Daily",
+            "path": "/report/fleet-daily"
+          },
+          {
+            "name": "Last 24h",
+            "path": "/report/last-24h"
+          },
+          {
+            "name": "Last 72h",
+            "path": "/report/last-72h"
+          }
+        ]
+      },
+      {
+        "name": "Yard",
+        "description": "Yard management",
+        "path": "/yard"
+      },
+      {
+        "name": "IO",
+        "description": "Input/Output controls",
+        "path": "/io"
+      },
+      {
+        "name": "Targets",
+        "description": "Geofencing targets with events",
+        "path": "/targets"
+      },
+      {
+        "name": "Routes",
+        "description": "Route management with events",
+        "path": "/routes"
+      },
+      {
+        "name": "Events",
+        "description": "Event logs and alerts",
+        "path": "/events"
+      },
+      {
+        "name": "Temperature",
+        "description": "Temperature monitoring",
+        "path": "/temperature"
+      },
+      {
+        "name": "Chart",
+        "description": "Speed/Analog/Activity charts",
+        "path": "/chart"
+      },
+      {
+        "name": "Last Point",
+        "description": "Latest GPS positions",
+        "path": "/last-point"
+      },
+      {
+        "name": "Shipments",
+        "description": "Shipment tracking with events",
+        "path": "/shipments"
+      },
+      {
+        "name": "Maintenance",
+        "description": "Vehicle maintenance scheduling",
+        "path": "/maintenance"
+      },
+      {
+        "name": "Drivers",
+        "description": "Driver registry and management",
+        "path": "/drivers"
+      },
+      {
+        "name": "Geofencing",
+        "description": "Geofence management",
+        "path": "/geofencing"
+      }
+    ]
+  },
+  "functionalities": {
+    "authentication": {
+      "name": "Authentication",
+      "features": [
+        "JWT token-based authentication",
+        "Session persistence",
+        "Two-factor authentication (2FA) support",
+        "Password reset functionality"
+      ]
+    },
+    "fleet_tracking": {
+      "name": "Fleet Tracking",
+      "features": [
+        "Real-time GPS position tracking",
+        "Vehicle status monitoring",
+        "Speed tracking",
+        "Heading/direction monitoring",
+        "Last position retrieval"
+      ]
+    },
+    "mapping": {
+      "name": "Mapping & Visualization",
+      "features": [
+        "Interactive map display",
+        "Multiple map providers support",
+        "Vehicle markers on map",
+        "Route visualization",
+        "Stop location markers"
+      ]
+    },
+    "reporting": {
+      "name": "Reporting & Analytics",
+      "features": [
+        "Total reports",
+        "Partial reports",
+        "Daily reports",
+        "Fleet daily reports",
+        "Last 24h reports",
+        "Last 72h reports",
+        "Custom date range reports",
+        "Export capabilities"
+      ]
+    },
+    "geofencing": {
+      "name": "Geofencing & Targets",
+      "features": [
+        "Geofence creation",
+        "Target waypoints",
+        "Entry/exit alerts",
+        "Custom zones"
+      ]
+    },
+    "sensors": {
+      "name": "Sensor Monitoring",
+      "features": [
+        "Temperature monitoring",
+        "Humidity tracking",
+        "Shock detection",
+        "Light sensors",
+        "Altitude tracking",
+        "Analog inputs"
+      ]
+    },
+    "events": {
+      "name": "Events & Alarms",
+      "features": [
+        "Real-time event notifications",
+        "Power failure alarms",
+        "SOS alerts",
+        "Speed limit violations",
+        "Geofence breach alerts",
+        "24/7 central station monitoring"
+      ]
+    },
+    "maintenance": {
+      "name": "Maintenance Management",
+      "features": [
+        "Vehicle maintenance scheduling",
+        "Service reminders",
+        "Maintenance history"
+      ]
+    },
+    "drivers": {
+      "name": "Driver Management",
+      "features": [
+        "Driver registry",
+        "Driver-vehicle association",
+        "Driver activation/deactivation",
+        "Driver identification"
+      ]
+    },
+    "shipments": {
+      "name": "Shipment Tracking",
+      "features": [
+        "Cargo tracking",
+        "Shipment events",
+        "ETA calculations"
+      ]
+    },
+    "api": {
+      "name": "API Access",
+      "features": [
+        "REST API access",
+        "API key management",
+        "Third-party integration"
+      ]
+    }
+  },
+  "units": [
+    "7REF",
+    "7Q0L",
+    "7REC",
+    "UDCF",
+    "7REY"
+  ]
+}
